@@ -205,13 +205,11 @@ func (g *GeneratorData) CombineImages() image.Image {
 
 		draw.Draw(rgba, image.Rectangle{image.Point{x, y}, image.Point{img.Bounds().Dx() + x, img.Bounds().Dy() + y}}, img, image.Point{0, 0}, draw.Src)
 
-		if *g.orientation == "horizontal" {
-			x += img.Bounds().Dx()
-		} else if *g.orientation == "vertical" {
+		if *g.orientation == "vertical" {
 			y += img.Bounds().Dy()
 		} else {
 			x += img.Bounds().Dx()
-			if i%2 == 1 {
+			if i%2 == 1 && *g.orientation == "grid" {
 				y += img.Bounds().Dy()
 				x = 0
 			}
