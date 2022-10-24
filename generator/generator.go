@@ -12,19 +12,21 @@ import (
 	"golang.org/x/image/draw"
 )
 
-type GeneratorInputData struct {
+type GeneratorData struct {
 	imagesAddresses *[]string
 	texts           *map[int][]string
 	images          []image.Image
 	orientation     *string
+	width           int
+	height          int
 }
 
-func (g *GeneratorInputData) InitGeneratorValues(addresses *[]string, texts *map[int][]string, orientation *string) {
+func (g *GeneratorData) InitGeneratorValues(addresses *[]string, texts *map[int][]string, orientation *string) {
 
 	g.imagesAddresses = addresses
 	g.texts = texts
 
-	orientations := [4]string{"single", "horizontal", "vertical", "grid"}
+	orientations := [4]string{"horizontal", "vertical", "grid"}
 
 	for _, o := range orientations {
 		if o == *orientation {
@@ -33,7 +35,7 @@ func (g *GeneratorInputData) InitGeneratorValues(addresses *[]string, texts *map
 	}
 }
 
-func (g *GeneratorInputData) GetImages() {
+func (g *GeneratorData) GetImages() {
 	var images = []image.Image{}
 
 	for _, v := range *g.imagesAddresses {
@@ -56,7 +58,7 @@ func (g *GeneratorInputData) GetImages() {
 	g.images = images
 }
 
-func (g *GeneratorInputData) GenerateImages() {
+func (g *GeneratorData) GenerateImages() {
 	g.GetImages()
 	if *g.orientation == "grid" {
 		g.GenerateGrid()
@@ -65,24 +67,24 @@ func (g *GeneratorInputData) GenerateImages() {
 	}
 }
 
-func (g *GeneratorInputData) GenerateSHV() {
+func (g *GeneratorData) GenerateSHV() {
 	g.ResizeImages()
 	g.AddText()
 	resultImage := g.CombineImages()
 	helpers.GenerateOutput(resultImage)
 }
 
-func (g *GeneratorInputData) GenerateGrid() {
+func (g *GeneratorData) GenerateGrid() {
 	*g.orientation = "vertical"
 	g.ResizeImages()
 	*g.orientation = "grid"
 	g.ResizeGrid()
 	g.AddText()
-	resultImage := g.CombineGrid()
+	resultImage := g.CombineImages()
 	helpers.GenerateOutput(resultImage)
 }
 
-func (g *GeneratorInputData) AddText() {
+func (g *GeneratorData) AddText() {
 	_, f, _ := helpers.LoadFont()
 	c := freetype.NewContext()
 	fontSize := 24.0
@@ -115,7 +117,7 @@ func (g *GeneratorInputData) AddText() {
 	}
 }
 
-func (g *GeneratorInputData) ResizeImages() {
+func (g *GeneratorData) ResizeImages() {
 	var minHeight int = -1
 	var minWidth int = -1
 
@@ -131,21 +133,24 @@ func (g *GeneratorInputData) ResizeImages() {
 		}
 	}
 
+	formulas := map[string]float64{
+		"horizontal": 0.0,
+		"vertical":   1.0,
+	}
+
+	orientationRatio := formulas[*g.orientation]
+
 	for i, img := range g.images {
 		x := img.Bounds().Dx()
 		y := img.Bounds().Dy()
 
-		if *g.orientation == "horizontal" {
-			var ratio float64 = float64(y) / float64(minHeight)
+		var ratio float64 = float64(x)/float64(minWidth)*(orientationRatio) + float64(y)/float64(minHeight)*(1-orientationRatio)
 
-			x = int(float64(x) / ratio)
-			y = minHeight
-		} else {
-			var ratio float64 = float64(x) / float64(minWidth)
+		x = int(float64(x)/ratio*(1-orientationRatio) + float64(minWidth)*(orientationRatio))
+		y = int(float64(y)/ratio*(orientationRatio) + float64(minHeight)*(1-orientationRatio))
 
-			y = int(float64(y) / ratio)
-			x = minWidth
-		}
+		g.width = x + g.width*int(1-orientationRatio)
+		g.height = y + g.height*int(orientationRatio)
 
 		dst := image.NewRGBA(image.Rect(0, 0, x, y))
 		draw.NearestNeighbor.Scale(dst, dst.Rect, img, img.Bounds(), draw.Over, nil)
@@ -154,7 +159,7 @@ func (g *GeneratorInputData) ResizeImages() {
 	}
 }
 
-func (g *GeneratorInputData) ResizeGrid() {
+func (g *GeneratorData) ResizeGrid() {
 	var tempImages = []image.Image{}
 
 	maxHeight := -1
@@ -175,7 +180,6 @@ func (g *GeneratorInputData) ResizeGrid() {
 
 				dst := image.NewRGBA(image.Rect(0, 0, width, maxHeight))
 				draw.NearestNeighbor.Scale(dst, dst.Rect, img, image.Rect(0, int((y-maxHeight)/2), width, maxHeight+int((y-maxHeight)/2)), draw.Over, nil)
-
 				g.images[count] = dst
 				count++
 			}
@@ -184,60 +188,36 @@ func (g *GeneratorInputData) ResizeGrid() {
 			maxHeight = 0
 		}
 	}
+
+	g.width = g.images[0].Bounds().Dx() * 2
+	g.height = g.images[0].Bounds().Dy() * len(g.images) / 2
+
 }
 
-func (g *GeneratorInputData) CombineImages() image.Image {
-	var width int = 0
-	var height int = 0
+func (g *GeneratorData) CombineImages() image.Image {
 
-	for _, v := range g.images {
-		if *g.orientation == "horizontal" {
-			width += v.Bounds().Dx()
-			height = v.Bounds().Dy()
-		} else {
-			width = v.Bounds().Dx()
-			height += v.Bounds().Dy()
-		}
-	}
-
-	bigImage := image.Rectangle{image.Point{0, 0}, image.Point{width, height}}
+	bigImage := image.Rectangle{image.Point{0, 0}, image.Point{g.width, g.height}}
 	rgba := image.NewRGBA(bigImage)
 
 	x := 0
 	y := 0
-	for _, img := range g.images {
+	for i, img := range g.images {
 
 		draw.Draw(rgba, image.Rectangle{image.Point{x, y}, image.Point{img.Bounds().Dx() + x, img.Bounds().Dy() + y}}, img, image.Point{0, 0}, draw.Src)
 
 		if *g.orientation == "horizontal" {
 			x += img.Bounds().Dx()
-		} else {
+		} else if *g.orientation == "vertical" {
 			y += img.Bounds().Dy()
+		} else {
+			x += img.Bounds().Dx()
+			if i%2 == 1 {
+				y += img.Bounds().Dy()
+				x = 0
+			}
 		}
 
 	}
 
 	return rgba
-}
-
-func (g *GeneratorInputData) CombineGrid() image.Image {
-	tempImages := g.images
-	var horizontalCombinedImages = []image.Image{}
-	g.images = nil
-
-	*g.orientation = "horizontal"
-
-	for _, img := range tempImages {
-		g.images = append(g.images, img)
-		if len(g.images) == 2 {
-			horizontalCombinedImages = append(horizontalCombinedImages, g.CombineImages())
-			g.images = nil
-		}
-	}
-
-	g.images = horizontalCombinedImages
-	*g.orientation = "vertical"
-
-	return g.CombineImages()
-
 }
