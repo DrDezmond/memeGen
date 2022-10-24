@@ -5,11 +5,14 @@ import (
 )
 
 func main() {
-	g := generator.GeneratorInputData{}	
-	m := make(map[int][]string)
-	m[0] = []string{"mistake", "because of dot"}
-	m[1] = []string{"", "Developers"}
-	g.InitGeneratorValues([]string{"./sources/1.jpeg", "./sources/2.jpeg"}, m, "horizontal")	
+	g := generator.GeneratorInputData{}
+	texts := map[int][]string{
+		0: []string{"mistakes", "because of dot"},
+		1: []string{"", "Developers"},
+	}
+	imagesSources := []string{"./sources/1.jpeg", "./sources/2.jpeg"}
+	orientation := "horizontal"
+
+	g.InitGeneratorValues(&imagesSources, &texts, &orientation)
 	g.GenerateImages()
 }
-

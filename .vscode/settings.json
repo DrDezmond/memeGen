@@ -1,3 +1,8 @@
 {
-  "editor.stickyScroll.enabled": true
+  "editor.stickyScroll.enabled": true,
+  "[go]": {
+    "editor.insertSpaces": true,
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "golang.go"
+  }
 }

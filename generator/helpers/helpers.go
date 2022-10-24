@@ -23,11 +23,10 @@ func GenerateOutput(rgba image.Image) {
 	jpeg.Encode(out, rgba, &opt)
 }
 
-
 func LoadFont() (font.Face, *truetype.Font, error) {
 	fontFile := "./fonts/impact.ttf"
 	fontBytes, err := os.ReadFile(fontFile)
-	
+
 	if err != nil {
 		return nil, nil, err
 	}
@@ -39,7 +38,7 @@ func LoadFont() (font.Face, *truetype.Font, error) {
 	opts.Size = 24.0
 	face := truetype.NewFace(f, &opts)
 
-	return face,f, nil
+	return face, f, nil
 }
 
 func DrawText(c *freetype.Context, text string, x int, y int) {

@@ -13,19 +13,21 @@ import (
 )
 
 type GeneratorInputData struct {
-	imagesAddresses []string
-	texts map[int][]string
-	images []image.Image
-	orientation string
+	imagesAddresses *[]string
+	texts           *map[int][]string
+	images          []image.Image
+	orientation     *string
 }
 
-func (g *GeneratorInputData) InitGeneratorValues(addresses []string, texts map[int][]string, orientation string) {
+func (g *GeneratorInputData) InitGeneratorValues(addresses *[]string, texts *map[int][]string, orientation *string) {
+
 	g.imagesAddresses = addresses
 	g.texts = texts
-	
+
 	orientations := [4]string{"single", "horizontal", "vertical", "grid"}
+
 	for _, o := range orientations {
-		if o == orientation {
+		if o == *orientation {
 			g.orientation = orientation
 		}
 	}
@@ -34,21 +36,21 @@ func (g *GeneratorInputData) InitGeneratorValues(addresses []string, texts map[i
 func (g *GeneratorInputData) GetImages() {
 	var images = []image.Image{}
 
-	for _, v := range g.imagesAddresses {
-		imgFile, err := os.Open(v)		
+	for _, v := range *g.imagesAddresses {
+		imgFile, err := os.Open(v)
 
 		if err != nil {
-				fmt.Println(err)
+			fmt.Println(err)
 		}
 
 		img, _, err := image.Decode(imgFile)
-		
+
 		if err != nil {
-				fmt.Println(err)
+			fmt.Println(err)
 		}
 
-		images = append(images, img);
-		
+		images = append(images, img)
+
 	}
 
 	g.images = images
@@ -58,40 +60,40 @@ func (g *GeneratorInputData) GenerateImages() {
 	g.GetImages()
 	g.ResizeImages()
 	g.AddText()
-	g.CombineImages()	
+	g.CombineImages()
 }
 
 func (g *GeneratorInputData) AddText() {
-	_, f, _ := helpers.LoadFont()	
+	_, f, _ := helpers.LoadFont()
 	c := freetype.NewContext()
 	fontSize := 24.0
-	c.SetFont(f)		
+	c.SetFont(f)
 	c.SetFontSize(fontSize)
 	c.SetSrc(image.White)
 
 	for i, img := range g.images {
-		rgba := img.(*image.RGBA)		
+		rgba := img.(*image.RGBA)
 
-		c.SetDst(rgba)		
+		c.SetDst(rgba)
 		c.SetClip(rgba.Bounds())
 
-		for j, val := range g.texts[i] {
+		for j, val := range (*g.texts)[i] {
 			c.SetSrc(image.Black)
 			c.SetFontSize(25.0)
-			outlineX := (rgba.Bounds().Dx() - len(val) * 10) / 2 - 1
-			outlineY := j * (rgba.Bounds().Dy() - int(fontSize * 1.5) ) + int(fontSize) + 1
-			
+			outlineX := (rgba.Bounds().Dx()-len(val)*10)/2 - 1
+			outlineY := j*(rgba.Bounds().Dy()-int(fontSize*1.5)) + int(fontSize) + 1
+
 			helpers.DrawText(c, val, outlineX, outlineY)
 
 			c.SetSrc(image.White)
 			c.SetFontSize(fontSize)
-			imageX := (rgba.Bounds().Dx() - len(val) * 10) / 2
-			imageY := j * (rgba.Bounds().Dy() - int(fontSize * 1.5) ) + int(fontSize)
-			
+			imageX := (rgba.Bounds().Dx() - len(val)*10) / 2
+			imageY := j*(rgba.Bounds().Dy()-int(fontSize*1.5)) + int(fontSize)
+
 			helpers.DrawText(c, val, imageX, imageY)
 
 		}
-		
+
 	}
 }
 
@@ -103,10 +105,10 @@ func (g *GeneratorInputData) ResizeImages() {
 		y := img.Bounds().Dy()
 		x := img.Bounds().Dx()
 
-		if (minHeight == -1 || minHeight > y) {
+		if minHeight == -1 || minHeight > y {
 			minHeight = y
-		} 
-		if (minWidth == -1 || minWidth > x) {
+		}
+		if minWidth == -1 || minWidth > x {
 			minWidth = x
 		}
 	}
@@ -115,7 +117,7 @@ func (g *GeneratorInputData) ResizeImages() {
 		x := img.Bounds().Dx()
 		y := img.Bounds().Dy()
 
-		if (g.orientation == "horizontal") {
+		if *g.orientation == "horizontal" {
 			var ratio float64 = float64(y) / float64(minHeight)
 
 			x = int(float64(x) / ratio)
@@ -128,8 +130,7 @@ func (g *GeneratorInputData) ResizeImages() {
 		}
 
 		dst := image.NewRGBA(image.Rect(0, 0, x, y))
-		draw.NearestNeighbor.Scale(dst, dst.Rect, img, img.Bounds(), draw.Over, nil)	
-
+		draw.NearestNeighbor.Scale(dst, dst.Rect, img, img.Bounds(), draw.Over, nil)
 
 		g.images[i] = dst
 	}
@@ -139,8 +140,8 @@ func (g *GeneratorInputData) CombineImages() {
 	var width int = 0
 	var height int = 0
 
-	for _,v := range g.images {
-		if (g.orientation == "horizontal") {
+	for _, v := range g.images {
+		if *g.orientation == "horizontal" {
 			width += v.Bounds().Dx()
 			height = v.Bounds().Dy()
 		} else {
@@ -151,21 +152,20 @@ func (g *GeneratorInputData) CombineImages() {
 
 	bigImage := image.Rectangle{image.Point{0, 0}, image.Point{width, height}}
 	rgba := image.NewRGBA(bigImage)
-	
+
 	x := 0
 	y := 0
-	for _,img := range g.images {
-		
-			draw.Draw(rgba, image.Rectangle{image.Point{x, y}, image.Point{img.Bounds().Dx() + x, img.Bounds().Dy()+y}}, img, image.Point{0, 0}, draw.Src)
-			
-			if (g.orientation == "horizontal") {
-				x += img.Bounds().Dx()			
-			} else {
-				y += img.Bounds().Dy()
-			}
-		
+	for _, img := range g.images {
+
+		draw.Draw(rgba, image.Rectangle{image.Point{x, y}, image.Point{img.Bounds().Dx() + x, img.Bounds().Dy() + y}}, img, image.Point{0, 0}, draw.Src)
+
+		if *g.orientation == "horizontal" {
+			x += img.Bounds().Dx()
+		} else {
+			y += img.Bounds().Dy()
+		}
+
 	}
 
 	helpers.GenerateOutput(rgba)
 }
-
