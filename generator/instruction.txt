@@ -1,0 +1,7 @@
+1. Find min width for all pictures
+2. Save the height for every pair of pictures (after width == minWidth)
+3. For picture with less height: deltaY = deltaHeight/2
+4. Draw picture on white or black bacground with vertical aligment = deltaY
+5. Add texts
+6. Pair combine
+7. Full combine
