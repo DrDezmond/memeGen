@@ -61,11 +61,15 @@ func (g *GeneratorInputData) GenerateImages() {
 	if *g.orientation == "grid" {
 		g.GenerateGrid()
 	} else {
-		g.ResizeImages()
-		g.AddText()
-		resultImage := g.CombineImages()
-		helpers.GenerateOutput(resultImage)
+		g.GenerateSHV()
 	}
+}
+
+func (g *GeneratorInputData) GenerateSHV() {
+	g.ResizeImages()
+	g.AddText()
+	resultImage := g.CombineImages()
+	helpers.GenerateOutput(resultImage)
 }
 
 func (g *GeneratorInputData) GenerateGrid() {
@@ -77,7 +81,6 @@ func (g *GeneratorInputData) GenerateGrid() {
 	resultImage := g.CombineGrid()
 	helpers.GenerateOutput(resultImage)
 }
-
 
 func (g *GeneratorInputData) AddText() {
 	_, f, _ := helpers.LoadFont()
@@ -151,25 +154,23 @@ func (g *GeneratorInputData) ResizeImages() {
 	}
 }
 
-
-
 func (g *GeneratorInputData) ResizeGrid() {
 	var tempImages = []image.Image{}
 
-	maxHeight := 1
+	maxHeight := -1
 	count := 0
-	
+
 	for _, img := range g.images {
 		tempImages = append(tempImages, img)
 		y := img.Bounds().Dy()
-		
+
 		if maxHeight < y {
 			maxHeight = y
 		}
 
-		if len(tempImages) == 2{
+		if len(tempImages) == 2 {
 			width := img.Bounds().Dx()
-			for _, img := range tempImages{
+			for _, img := range tempImages {
 				y := img.Bounds().Dy()
 
 				dst := image.NewRGBA(image.Rect(0, 0, width, maxHeight))
@@ -184,8 +185,6 @@ func (g *GeneratorInputData) ResizeGrid() {
 		}
 	}
 }
-
-
 
 func (g *GeneratorInputData) CombineImages() image.Image {
 	var width int = 0
@@ -228,7 +227,7 @@ func (g *GeneratorInputData) CombineGrid() image.Image {
 
 	*g.orientation = "horizontal"
 
-	for _, img := range tempImages{
+	for _, img := range tempImages {
 		g.images = append(g.images, img)
 		if len(g.images) == 2 {
 			horizontalCombinedImages = append(horizontalCombinedImages, g.CombineImages())
@@ -238,7 +237,7 @@ func (g *GeneratorInputData) CombineGrid() image.Image {
 
 	g.images = horizontalCombinedImages
 	*g.orientation = "vertical"
-	
+
 	return g.CombineImages()
 
 }
