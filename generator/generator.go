@@ -58,10 +58,26 @@ func (g *GeneratorInputData) GetImages() {
 
 func (g *GeneratorInputData) GenerateImages() {
 	g.GetImages()
-	g.ResizeImages()
-	g.AddText()
-	g.CombineImages()
+	if *g.orientation == "grid" {
+		g.GenerateGrid()
+	} else {
+		g.ResizeImages()
+		g.AddText()
+		resultImage := g.CombineImages()
+		helpers.GenerateOutput(resultImage)
+	}
 }
+
+func (g *GeneratorInputData) GenerateGrid() {
+	*g.orientation = "vertical"
+	g.ResizeImages()
+	*g.orientation = "grid"
+	g.ResizeGrid()
+	g.AddText()
+	resultImage := g.CombineGrid()
+	helpers.GenerateOutput(resultImage)
+}
+
 
 func (g *GeneratorInputData) AddText() {
 	_, f, _ := helpers.LoadFont()
@@ -93,7 +109,6 @@ func (g *GeneratorInputData) AddText() {
 			helpers.DrawText(c, val, imageX, imageY)
 
 		}
-
 	}
 }
 
@@ -136,7 +151,43 @@ func (g *GeneratorInputData) ResizeImages() {
 	}
 }
 
-func (g *GeneratorInputData) CombineImages() {
+
+
+func (g *GeneratorInputData) ResizeGrid() {
+	var tempImages = []image.Image{}
+
+	maxHeight := 1
+	count := 0
+	
+	for _, img := range g.images {
+		tempImages = append(tempImages, img)
+		y := img.Bounds().Dy()
+		
+		if maxHeight < y {
+			maxHeight = y
+		}
+
+		if len(tempImages) == 2{
+			width := img.Bounds().Dx()
+			for _, img := range tempImages{
+				y := img.Bounds().Dy()
+
+				dst := image.NewRGBA(image.Rect(0, 0, width, maxHeight))
+				draw.NearestNeighbor.Scale(dst, dst.Rect, img, image.Rect(0, int((y-maxHeight)/2), width, maxHeight+int((y-maxHeight)/2)), draw.Over, nil)
+
+				g.images[count] = dst
+				count++
+			}
+
+			tempImages = nil
+			maxHeight = 0
+		}
+	}
+}
+
+
+
+func (g *GeneratorInputData) CombineImages() image.Image {
 	var width int = 0
 	var height int = 0
 
@@ -167,5 +218,27 @@ func (g *GeneratorInputData) CombineImages() {
 
 	}
 
-	helpers.GenerateOutput(rgba)
+	return rgba
+}
+
+func (g *GeneratorInputData) CombineGrid() image.Image {
+	tempImages := g.images
+	var horizontalCombinedImages = []image.Image{}
+	g.images = nil
+
+	*g.orientation = "horizontal"
+
+	for _, img := range tempImages{
+		g.images = append(g.images, img)
+		if len(g.images) == 2 {
+			horizontalCombinedImages = append(horizontalCombinedImages, g.CombineImages())
+			g.images = nil
+		}
+	}
+
+	g.images = horizontalCombinedImages
+	*g.orientation = "vertical"
+	
+	return g.CombineImages()
+
 }
