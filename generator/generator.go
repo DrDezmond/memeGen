@@ -60,25 +60,16 @@ func (g *GeneratorData) GetImages() {
 
 func (g *GeneratorData) GenerateImages() {
 	g.GetImages()
+
 	if *g.orientation == "grid" {
-		g.GenerateGrid()
+		*g.orientation = "vertical"
+		g.ResizeImages()
+		*g.orientation = "grid"
+		g.ResizeGrid()
 	} else {
-		g.GenerateSHV()
+		g.ResizeImages()
 	}
-}
 
-func (g *GeneratorData) GenerateSHV() {
-	g.ResizeImages()
-	g.AddText()
-	resultImage := g.CombineImages()
-	helpers.GenerateOutput(resultImage)
-}
-
-func (g *GeneratorData) GenerateGrid() {
-	*g.orientation = "vertical"
-	g.ResizeImages()
-	*g.orientation = "grid"
-	g.ResizeGrid()
 	g.AddText()
 	resultImage := g.CombineImages()
 	helpers.GenerateOutput(resultImage)
