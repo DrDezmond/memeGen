@@ -1,11 +1,9 @@
 package generator
 
 import (
-	"fmt"
 	"image"
 	_ "image/jpeg"
 	_ "image/png"
-	"os"
 
 	"example.com/generator/generator/helpers"
 	"github.com/golang/freetype"
@@ -25,6 +23,7 @@ func (g *GeneratorData) InitGeneratorValues(addresses *[]string, texts *map[int]
 
 	g.imagesAddresses = addresses
 	g.texts = texts
+	g.images = helpers.OpenImages(*g.imagesAddresses)
 
 	orientations := [4]string{"horizontal", "vertical", "grid"}
 
@@ -35,31 +34,7 @@ func (g *GeneratorData) InitGeneratorValues(addresses *[]string, texts *map[int]
 	}
 }
 
-func (g *GeneratorData) GetImages() {
-	var images = []image.Image{}
-
-	for _, v := range *g.imagesAddresses {
-		imgFile, err := os.Open(v)
-
-		if err != nil {
-			fmt.Println(err)
-		}
-
-		img, _, err := image.Decode(imgFile)
-
-		if err != nil {
-			fmt.Println(err)
-		}
-
-		images = append(images, img)
-
-	}
-
-	g.images = images
-}
-
 func (g *GeneratorData) GenerateImages() {
-	g.GetImages()
 
 	if *g.orientation == "grid" {
 		*g.orientation = "vertical"

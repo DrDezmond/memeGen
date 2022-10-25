@@ -46,3 +46,25 @@ func DrawText(c *freetype.Context, text string, x int, y int) {
 
 	c.DrawString(strings.ToUpper(text), pt)
 }
+
+func OpenImages(imagesAddresses []string) []image.Image{
+	var images = []image.Image{}
+
+	for _, v := range imagesAddresses {
+		imgFile, err := os.Open(v)
+
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		img, _, err := image.Decode(imgFile)
+
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		images = append(images, img)
+
+	}
+	return images
+}
