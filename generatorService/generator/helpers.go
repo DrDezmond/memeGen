@@ -1,4 +1,4 @@
-package helpers
+package generatorService
 
 import (
 	"fmt"
@@ -13,7 +13,7 @@ import (
 )
 
 func GenerateOutput(rgba image.Image) {
-	out, err := os.Create("./dist/output.jpg")
+	out, err := os.Create("./generatorService/dist/output.jpg")
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -24,7 +24,7 @@ func GenerateOutput(rgba image.Image) {
 }
 
 func LoadFont() (font.Face, *truetype.Font, error) {
-	fontFile := "./fonts/impact.ttf"
+	fontFile := "./generatorService/fonts/impact.ttf"
 	fontBytes, err := os.ReadFile(fontFile)
 
 	if err != nil {
@@ -47,7 +47,7 @@ func DrawText(c *freetype.Context, text string, x int, y int) {
 	c.DrawString(strings.ToUpper(text), pt)
 }
 
-func OpenImages(imagesAddresses []string) []image.Image{
+func OpenImages(imagesAddresses []string) []image.Image {
 	var images = []image.Image{}
 
 	for _, v := range imagesAddresses {

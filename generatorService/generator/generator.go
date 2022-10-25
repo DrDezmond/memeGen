@@ -1,11 +1,10 @@
-package generator
+package generatorService
 
 import (
 	"image"
 	_ "image/jpeg"
 	_ "image/png"
 
-	"example.com/generator/generator/helpers"
 	"github.com/golang/freetype"
 	"golang.org/x/image/draw"
 )
@@ -23,7 +22,7 @@ func (g *GeneratorData) InitGeneratorValues(addresses *[]string, texts *map[int]
 
 	g.imagesAddresses = addresses
 	g.texts = texts
-	g.images = helpers.OpenImages(*g.imagesAddresses)
+	g.images = OpenImages(*g.imagesAddresses)
 
 	orientations := [4]string{"horizontal", "vertical", "grid"}
 
@@ -47,11 +46,11 @@ func (g *GeneratorData) GenerateImages() {
 
 	g.AddText()
 	resultImage := g.CombineImages()
-	helpers.GenerateOutput(resultImage)
+	GenerateOutput(resultImage)
 }
 
 func (g *GeneratorData) AddText() {
-	_, f, _ := helpers.LoadFont()
+	_, f, _ := LoadFont()
 	c := freetype.NewContext()
 	fontSize := 24.0
 	c.SetFont(f)
@@ -70,14 +69,14 @@ func (g *GeneratorData) AddText() {
 			outlineX := (rgba.Bounds().Dx()-len(val)*10)/2 - 1
 			outlineY := j*(rgba.Bounds().Dy()-int(fontSize*1.5)) + int(fontSize) + 1
 
-			helpers.DrawText(c, val, outlineX, outlineY)
+			DrawText(c, val, outlineX, outlineY)
 
 			c.SetSrc(image.White)
 			c.SetFontSize(fontSize)
 			imageX := (rgba.Bounds().Dx() - len(val)*10) / 2
 			imageY := j*(rgba.Bounds().Dy()-int(fontSize*1.5)) + int(fontSize)
 
-			helpers.DrawText(c, val, imageX, imageY)
+			DrawText(c, val, imageX, imageY)
 
 		}
 	}
