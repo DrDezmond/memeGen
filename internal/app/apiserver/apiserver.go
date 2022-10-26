@@ -1,24 +1,26 @@
 package apiserver
 
 import (
-	"io"
 	"net/http"
 
+	generatorService "github.com/DrDezmond/memeGen/generatorService/generator"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 )
 
 type APIserver struct {
-	config *Config
-	logger *logrus.Logger
-	router *mux.Router
+	config    *Config
+	logger    *logrus.Logger
+	router    *mux.Router
+	generator *generatorService.GeneratorData
 }
 
 func New(config *Config) *APIserver {
 	return &APIserver{
-		config: config,
-		logger: logrus.New(),
-		router: mux.NewRouter(),
+		config:    config,
+		logger:    logrus.New(),
+		router:    mux.NewRouter(),
+		generator: generatorService.New(),
 	}
 }
 
@@ -45,12 +47,6 @@ func (s *APIserver) configureLogger() error {
 }
 
 func (s *APIserver) configureRouter() {
-	s.router.HandleFunc("/hello", s.HandleHello())
-}
-
-func (s *APIserver) HandleHello() http.HandlerFunc {
-
-	return func(w http.ResponseWriter, r *http.Request) {
-		io.WriteString(w, "ZAEBISYA")
-	}
+	s.router.Handle("/upload-images", s.HandleImagesUpload())
+	s.router.Handle("/upload-generator-data", s.HandleGeneratorDataUpload())
 }
