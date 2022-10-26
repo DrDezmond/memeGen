@@ -1,6 +1,7 @@
 package apiserver
 
 import (
+	"io"
 	"net/http"
 
 	generatorService "github.com/DrDezmond/memeGen/generatorService/generator"
@@ -46,7 +47,14 @@ func (s *APIserver) configureLogger() error {
 	return nil
 }
 
+func (s *APIserver) helloHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, req *http.Request) {
+		io.WriteString(w, "Hello, world!\n")
+	}
+}
+
 func (s *APIserver) configureRouter() {
 	s.router.Handle("/upload-images", s.HandleImagesUpload())
 	s.router.Handle("/upload-generator-data", s.HandleGeneratorDataUpload())
+	s.router.Handle("/", s.helloHandler())
 }
