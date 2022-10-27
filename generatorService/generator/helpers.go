@@ -27,8 +27,14 @@ func LoadFont() (font.Face, *truetype.Font, error) {
 	return face, f, nil
 }
 
-func DrawText(c *freetype.Context, text string, x int, y int) {
-	pt := freetype.Pt(x, y)
+func DrawText(c *freetype.Context, text string, x int, y int, face font.Face) {
 
+	iwidthf := 0
+	for _, x := range text {
+		awidth, _ := face.GlyphAdvance(rune(x))
+		iwidthf += int(float64(awidth) / 64)
+	}
+	// fmt.Printf("%+v\n", iwidthf)
+	pt := freetype.Pt(x-int(iwidthf), y)
 	c.DrawString(strings.ToUpper(text), pt)
 }

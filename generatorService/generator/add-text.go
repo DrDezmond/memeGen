@@ -7,7 +7,7 @@ import (
 )
 
 func (g *GeneratorData) AddText() {
-	_, f, _ := LoadFont()
+	face, f, _ := LoadFont()
 	c := freetype.NewContext()
 	c.SetFont(f)
 	c.SetFontSize(g.fontSize)
@@ -24,17 +24,17 @@ func (g *GeneratorData) AddText() {
 			c.SetFontSize(g.fontSize)
 			for deltaX := -1; deltaX < 2; deltaX++ {
 				for deltaY := -1; deltaY < 2; deltaY++ {
-					outlineX := (rgba.Bounds().Dx()-len(val)*int(g.fontSize/1.4))/2 + deltaX
+					outlineX := (rgba.Bounds().Dx())/2 + deltaX
 					outlineY := j*(rgba.Bounds().Dy()-int(g.fontSize*1.5)) + int(g.fontSize) + deltaY
-					DrawText(c, val, outlineX, outlineY)
+					DrawText(c, val, outlineX, outlineY, face)
 				}
 			}
 			c.SetSrc(image.White)
 			c.SetFontSize(g.fontSize)
-			imageX := (rgba.Bounds().Dx() - len(val)*int(g.fontSize/1.4)) / 2
+			imageX := (rgba.Bounds().Dx()) / 2
 			imageY := j*(rgba.Bounds().Dy()-int(g.fontSize*1.5)) + int(g.fontSize)
 
-			DrawText(c, val, imageX, imageY)
+			DrawText(c, val, imageX, imageY, face)
 
 		}
 	}
