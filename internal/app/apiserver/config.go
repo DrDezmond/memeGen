@@ -8,7 +8,7 @@ type Config struct {
 }
 
 func NewConfig() *Config {
-	port, exists := os.LookupEnv("$PORT")
+	port, exists := os.LookupEnv("PORT")
 	if !exists {
 		port = "8080"
 	}

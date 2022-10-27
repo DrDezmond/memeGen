@@ -1,1 +1,1 @@
-web: ./apiserver $PORT
+web: bin/apiserver
