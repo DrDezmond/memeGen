@@ -21,15 +21,17 @@ func (g *GeneratorData) AddText() {
 
 		for j, val := range (g.texts)[i] {
 			c.SetSrc(image.Black)
-			c.SetFontSize(25.0)
-			outlineX := (rgba.Bounds().Dx()-len(val)*10)/2 - 1
-			outlineY := j*(rgba.Bounds().Dy()-int(g.fontSize*1.5)) + int(g.fontSize) + 1
-
-			DrawText(c, val, outlineX, outlineY)
-
+			c.SetFontSize(g.fontSize)
+			for deltaX := -1; deltaX < 2; deltaX++ {
+				for deltaY := -1; deltaY < 2; deltaY++ {
+					outlineX := (rgba.Bounds().Dx()-len(val)*int(g.fontSize/1.4))/2 + deltaX
+					outlineY := j*(rgba.Bounds().Dy()-int(g.fontSize*1.5)) + int(g.fontSize) + deltaY
+					DrawText(c, val, outlineX, outlineY)
+				}
+			}
 			c.SetSrc(image.White)
 			c.SetFontSize(g.fontSize)
-			imageX := (rgba.Bounds().Dx() - len(val)*10) / 2
+			imageX := (rgba.Bounds().Dx() - len(val)*int(g.fontSize/1.4)) / 2
 			imageY := j*(rgba.Bounds().Dy()-int(g.fontSize*1.5)) + int(g.fontSize)
 
 			DrawText(c, val, imageX, imageY)
