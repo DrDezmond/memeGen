@@ -8,6 +8,7 @@ require (
 )
 
 require (
+	github.com/felixge/httpsnoop v1.0.1 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/kr/fs v0.1.0 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
@@ -21,5 +22,6 @@ require (
 
 require (
 	github.com/BurntSushi/toml v1.2.1 // indirect
+	github.com/gorilla/handlers v1.5.1
 	github.com/sirupsen/logrus v1.9.0
 )
