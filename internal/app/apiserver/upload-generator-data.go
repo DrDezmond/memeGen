@@ -15,11 +15,14 @@ func (s *APIserver) HandleGeneratorDataUpload() http.HandlerFunc {
 		FontSize    float64
 	}
 
-	type Response struct {
-		Image string
-	}
+	// type Response struct {
+	// 	Image string
+	// }
 
 	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/text")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+
 		var data GeneratorData
 
 		if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
@@ -46,7 +49,6 @@ func (s *APIserver) HandleGeneratorDataUpload() http.HandlerFunc {
 		}
 
 		w.WriteHeader(http.StatusOK)
-		w.Header().Set("Content-Type", "application/text")
 		w.Write([]byte(imgBase64Str))
 
 		// res := Response{Image: imgBase64Str}

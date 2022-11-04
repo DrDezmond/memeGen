@@ -54,7 +54,7 @@ func (s *APIserver) helloHandler() http.HandlerFunc {
 }
 
 func (s *APIserver) configureRouter() {
-	s.router.Handle("/upload-images", s.HandleImagesUpload())
-	s.router.Handle("/upload-generator-data", s.HandleGeneratorDataUpload())
-	s.router.Handle("/", s.helloHandler())
+	s.router.Handle("/upload-images", s.HandleImagesUpload()).Methods("POST", "OPTIONS")
+	s.router.Handle("/upload-generator-data", s.HandleGeneratorDataUpload()).Methods("POST", "OPTIONS")
+	s.router.Handle("/", s.helloHandler()).Methods("GET", "OPTIONS")
 }
